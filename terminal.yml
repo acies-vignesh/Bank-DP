@@ -1,0 +1,49 @@
+Table: TERMINAL_DIM
+dimensions:
+  - name: terminal_id
+    column: terminal_id
+    type: string
+    description: Unique identifier for each terminal.
+    primary_key: true
+
+  - name: terminal_type
+    column: terminal_type
+    type: string
+    description: Type of terminal (e.g., ATM, POS, Online).
+
+  - name: geo_location
+    column: geo_location
+    type: string
+    description: Geographical coordinates (latitude, longitude) of the terminal.
+
+  - name: owner
+    column: owner
+    type: string
+    description: Owner of the terminal.
+
+  - name: city
+    column: city
+    type: string
+    description: City where the terminal is located.
+
+  - name: state
+    column: state
+    type: string
+    description: State where the terminal is located.
+
+  - name: country
+    column: country
+    type: string
+    description: Country where the terminal is located.
+
+  # Derived Dimensions for TERMINAL_DIM
+  - name: terminal_geo_region
+    sql: CASE WHEN {TABLE.country} = 'USA' THEN 'North America' ELSE 'International' END # Example; refine with more countries/regions
+    type: string
+    description: Broader geographical region of the terminal.
+
+measures:
+  - name: total_terminals
+    sql: COUNT({TABLE.terminal_id})
+    type: number
+    description: Total count of all distinct terminals.

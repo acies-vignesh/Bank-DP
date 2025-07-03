@@ -1,0 +1,44 @@
+Table: COUNTERPARTY_DIM
+dimensions:
+  - name: counterparty_id
+    column: counterparty_id
+    type: string
+    description: Unique identifier for each counterparty.
+    primary_key: true
+
+  - name: entity_type
+    column: entity_type
+    type: string
+    description: Type of counterparty entity (e.g., Merchant, Individual).
+
+  - name: country_code
+    column: country_code
+    type: string
+    description: ISO 3166-1 alpha-2 country code of the counterparty.
+
+  - name: risk_category
+    column: risk_category
+    type: string
+    description: Risk category of the counterparty (e.g., Low, High, Sanctioned).
+
+  - name: name
+    column: name
+    type: string
+    description: Name of the counterparty.
+
+  - name: industry
+    column: industry
+    type: string
+    description: Industry of the counterparty.
+
+  # Derived Dimensions for COUNTERPARTY_DIM
+  - name: counterparty_geo_region
+    sql: CASE WHEN {TABLE.country_code} IN ('US', 'CA', 'MX') THEN 'North America' ELSE 'Rest of World' END # Example, refine as needed
+    type: string
+    description: Broader geographical region of the counterparty.
+
+measures:
+  - name: total_counterparties
+    sql: COUNT({TABLE.counterparty_id})
+    type: number
+    description: Total count of all distinct counterparties.

@@ -1,0 +1,85 @@
+Table: ACCOUNT_DIM
+dimensions:
+  - name: account_id
+    column: account_id
+    type: string
+    description: Unique identifier for each account.
+    primary_key: true
+
+  - name: customer_id
+    column: customer_id
+    type: string
+    description: Foreign key to CUSTOMER_DIM.
+
+  - name: account_type
+    column: account_type
+    type: string
+    description: Type of account (e.g., Savings, Checking, Credit).
+
+  - name: open_date
+    column: open_date
+    type: date
+    description: Date the account was opened.
+
+  - name: current_balance
+    column: current_balance
+    type: number
+    description: Current balance of the account.
+
+  - name: overdraft_limit
+    column: overdraft_limit
+    type: number
+    description: Overdraft limit for the account.
+
+  - name: status
+    column: status
+    type: string
+    description: Current status of the account (e.g., Active, Dormant).
+
+  # Derived Dimensions for ACCOUNT_DIM
+  - name: account_tenure_months
+    sql: DATEDIFF('month', {TABLE.open_date}, CURRENT_DATE()) # SQL function might vary
+    type: number
+    description: Number of months since the account was opened.
+
+  - name: account_balance_band
+    sql: >
+      CASE
+        WHEN {TABLE.current_balance} < 1000 THEN '<1K'
+        WHEN {TABLE.current_balance} < 10000 THEN '1K-10K'
+        WHEN {TABLE.current_balance} < 100000 THEN '10K-100K'
+        ELSE '>100K'
+      END
+    type: string
+    description: Categorical band for current account balance.
+
+  - name: is_overdraft_enabled
+    sql: CASE WHEN {TABLE.overdraft_limit} > 0 THEN TRUE ELSE FALSE END
+    type: boolean
+    description: Indicates if the account has an overdraft limit enabled.
+
+measures:
+  - name: total_accounts
+    sql: COUNT({TABLE.account_id})
+    type: number
+    description: Total count of all distinct accounts.
+
+  - name: total_current_balance_sum
+    sql: SUM({TABLE.current_balance})
+    type: number
+    description: Sum of current balances across all accounts.
+
+  - name: average_current_balance
+    sql: AVG({TABLE.current_balance})
+    type: number
+    description: Average current balance per account.
+
+  - name: total_overdraft_limit_sum
+    sql: SUM({TABLE.overdraft_limit})
+    type: number
+    description: Sum of overdraft limits across all accounts.
+
+  - name: overdraft_enabled_accounts_count
+    sql: COUNT(CASE WHEN {TABLE.overdraft_limit} > 0 THEN {TABLE.account_id} ELSE NULL END)
+    type: number
+    description: Count of accounts with an overdraft limit enabled.
