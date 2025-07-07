@@ -1,7 +1,7 @@
 checks:
   # Schema Validation Checks
   - schema:
-      name: Ensure essential account columns are present
+      name: Ensure essential account columns are present.
       warn:
         when required column missing: [account_id, customer_id, account_type, open_date, current_balance, status]
       attributes:
