@@ -1,7 +1,7 @@
 checks:
   # Schema Validation Checks
   - schema:
-      name: Ensure essential customer columns are present
+      name: Ensure essential customer columns present
       warn:
         when required column missing: [customer_id, age, date_joined, risk_profile]
       attributes:
