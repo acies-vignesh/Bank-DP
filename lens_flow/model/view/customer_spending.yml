@@ -23,7 +23,6 @@ views:
         prefix: false # No prefix needed for customer_dim columns as it's the main entity
         includes:
           - customer_id
-          - risk_profile
           - income_bracket
           - occupation
           - age
