@@ -1,6 +1,5 @@
 SELECT
     customer_id,
-    risk_profile,
     income_bracket,
     occupation,
     age,
