@@ -303,3 +303,8 @@ segments:
       category: Amount Banding
       title: Large-value transactions, critical for fraud detection and liquidity.
   
+  - name: large_failed_mobile_transactions
+    sql: "{TABLE}.amount > 5000 AND {TABLE}.transaction_status = 'Failed' AND {TABLE}.transaction_channel = 'Mobile'"
+    description: Filters transactions that are over $5000, failed, and originated from the mobile channel.
+    attributes:
+      business_value: Crucial for identifying high-impact operational issues or potential fraud specific to the mobile channel.
