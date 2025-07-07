@@ -1,0 +1,10 @@
+SELECT
+    account_id,
+    customer_id,
+    account_type,
+    open_date,
+    current_balance,
+    overdraft_limit,
+    status
+FROM
+    ACCOUNT_DIM;

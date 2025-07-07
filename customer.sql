@@ -1,0 +1,12 @@
+SELECT
+    customer_id,
+    risk_profile,
+    income_bracket,
+    occupation,
+    age,
+    date_joined,
+    location,
+    life_event,
+    credit_score
+FROM
+    CUSTOMER_DIM;

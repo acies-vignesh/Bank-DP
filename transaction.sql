@@ -1,0 +1,16 @@
+SELECT
+    transaction_id,
+    event_time,
+    amount,
+    transaction_type,
+    transaction_status,
+    customer_id,
+    account_id,
+    terminal_id,
+    counterparty_id,
+    balance_before,
+    balance_after,
+    session_duration,
+    device_fingerprint
+FROM
+    TRANSACTION_FACT;
