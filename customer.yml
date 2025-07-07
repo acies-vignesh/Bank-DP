@@ -1,0 +1,122 @@
+Table: CUSTOMER_DIM
+dimensions:
+  - name: customer_id
+    column: customer_id
+    type: string
+    description: Unique identifier for each customer.
+    primary_key: true
+
+  - name: risk_profile
+    column: risk_profile
+    type: string
+    description: Customer's risk profile (High/Medium/Low).
+
+  - name: income_bracket
+    column: income_bracket
+    type: string
+    description: Customer's income bracket.
+
+  - name: occupation
+    column: occupation
+    type: string
+    description: Customer's occupation.
+
+  - name: age
+    column: age
+    type: number
+    description: Customer's current age.
+
+  - name: gender
+    column: gender
+    type: string
+    description: Customer's gender.
+
+  - name: address
+    column: address
+    type: string
+    description: Customer's street address.
+
+  - name: city
+    column: city
+    type: string
+    description: Customer's city.
+
+  - name: state
+    column: state
+    type: string
+    description: Customer's state.
+
+  - name: country
+    column: country
+    type: string
+    description: Customer's country.
+
+  - name: date_joined
+    column: date_joined
+    type: date
+    description: Date the customer joined the bank.
+
+  - name: last_interaction
+    column: last_interaction
+    type: time
+    description: Timestamp of the last interaction with the customer.
+
+  - name: credit_score
+    column: credit_score
+    type: number
+    description: Customer's credit score.
+
+  # Derived Dimensions for CUSTOMER_DIM
+measures:  
+  - name: customer_tenure_months
+    sql: DATEDIFF('month', {TABLE.date_joined}, CURRENT_DATE()) # SQL function might vary (e.g., MONTHS_BETWEEN)
+    type: number
+    description: Number of months since the customer joined.
+
+  - name: customer_age_band
+    sql: >
+      CASE
+        WHEN {TABLE.age} < 25 THEN '<25'
+        WHEN {TABLE.age} < 35 THEN '25-34'
+        WHEN {TABLE.age} < 50 THEN '35-49'
+        WHEN {TABLE.age} < 65 THEN '50-64'
+        ELSE '>65'
+      END
+    type: string
+    description: Categorical band for customer's age.
+
+  - name: total_customers
+    sql: COUNT({TABLE.customer_id})
+    type: number
+    description: Total count of all distinct customers.
+
+  - name: average_customer_age
+    sql: AVG({TABLE.age})
+    type: number
+    description: Average age of customers.
+
+  - name: average_credit_score
+    sql: AVG({TABLE.credit_score})
+    type: number
+    description: Average credit score of customers.
+
+segments:
+  - name: high_risk_customers
+    sql: "{TABLE}.risk_profile = 'High'"
+    description: This segment identifies customers categorized with a high risk profile.
+
+  - name: high_income_customers
+    sql: "{TABLE}.income_bracket = '>150k'"
+    description: This segment filters for customers in the highest income bracket.
+
+  - name: young_adult_customers
+    sql: "{TABLE}.age BETWEEN 18 AND 34"
+    description: This segment captures customers within the young adult age range.
+
+  - name: active_customers_last_90_days
+    sql: "{TABLE}.last_interaction >= CURRENT_DATE() - INTERVAL '90' DAY" # SQL function might vary
+    description: This segment identifies customers who have interacted with the bank in the last 90 days.
+
+  - name: new_customers_this_year
+    sql: "YEAR({TABLE}.date_joined) = YEAR(CURRENT_DATE())" # SQL function might vary
+    description: This segment identifies customers who joined the bank in the current year.

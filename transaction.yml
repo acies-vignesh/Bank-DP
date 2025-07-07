@@ -1,0 +1,251 @@
+Table: TRANSACTION_FACT
+dimensions:
+  - name: transaction_id
+    column: transaction_id
+    type: string
+    description: Unique identifier for each transaction.
+    primary_key: true
+
+  - name: event_time
+    column: event_time
+    type: time
+    description: Timestamp of when the transaction occurred.
+
+  - name: customer_id
+    column: customer_id
+    type: string
+    description: Foreign key to CUSTOMER_DIM.
+
+  - name: terminal_id
+    column: terminal_id
+    type: string
+    description: Foreign key to TERMINAL_DIM.
+
+  - name: account_id
+    column: account_id
+    type: string
+    description: Foreign key to ACCOUNT_DIM.
+
+  - name: counterparty_id
+    column: counterparty_id
+    type: string
+    description: Foreign key to COUNTERPARTY_DIM.
+
+  - name: amount
+    column: amount
+    type: number
+    description: Monetary amount of the transaction.
+
+  - name: currency
+    column: currency
+    type: string
+    description: Currency code of the transaction amount.
+
+  - name: transaction_type
+    column: transaction_type
+    type: string
+    description: Type of transaction (e.g., ATM, POS, Online, Transfer).
+
+  - name: balance_before
+    column: balance_before
+    type: number
+    description: Account balance before the transaction.
+
+  - name: balance_after
+    column: balance_after
+    type: number
+    description: Account balance after the transaction.
+
+  - name: ip_address
+    column: ip_address
+    type: string
+    description: IP address associated with the transaction.
+
+  - name: device_fingerprint
+    column: device_fingerprint
+    type: string
+    description: Unique identifier for the device used.
+
+  - name: transaction_category
+    column: transaction_category
+    type: string
+    description: Category of the transaction (e.g., Grocery, Travel, Salary).
+
+  - name: transaction_channel
+    column: transaction_channel
+    type: string
+    description: Channel used for the transaction (e.g., Mobile, Web).
+
+  - name: transaction_status
+    column: transaction_status
+    type: string
+    description: Current status of the transaction (e.g., Completed, Failed).
+
+  - name: merchant_category
+    column: merchant_category
+    type: string
+    description: Merchant Category Code.
+
+  - name: transaction_sequence
+    column: transaction_sequence
+    type: number
+    description: Sequence number of transactions for a customer/account.
+
+  - name: session_duration
+    column: session_duration
+    type: number
+    description: Duration of the user session in seconds.
+
+  # Derived Dimensions for TRANSACTION_FACT
+measures:  
+  - name: transaction_date
+    sql: DATE({TABLE.event_time})
+    type: date
+    description: Date part of the transaction timestamp.
+
+  - name: transaction_day_of_week
+    sql: DAYOFWEEK({TABLE.event_time}) # Or specific function for day name like DAYNAME()
+    type: number # Or string if using DAYNAME()
+    description: Day of the week when the transaction occurred (e.g., 1 for Sunday, 2 for Monday).
+
+  - name: transaction_hour_of_day
+    sql: HOUR({TABLE.event_time})
+    type: number
+    description: Hour of the day when the transaction occurred (0-23).
+
+  - name: is_weekend_transaction
+    sql: CASE WHEN DAYOFWEEK({TABLE.event_time}) IN (1, 7) THEN TRUE ELSE FALSE END # Assuming 1=Sunday, 7=Saturday
+    type: boolean
+    description: Indicates if the transaction occurred on a weekend.
+
+  - name: is_peak_hour_transaction
+    sql: CASE WHEN HOUR({TABLE.event_time}) >= 8 AND HOUR({TABLE.event_time}) < 20 THEN TRUE ELSE FALSE END
+    type: boolean
+    description: Indicates if the transaction occurred between 8 AM and 8 PM.
+
+  - name: transaction_amount_band
+    sql: >
+      CASE
+        WHEN {TABLE.amount} < 10 THEN '<$10'
+        WHEN {TABLE.amount} < 100 THEN '$10-$100'
+        WHEN {TABLE.amount} < 1000 THEN '$100-$1K'
+        WHEN {TABLE.amount} < 10000 THEN '$1K-$10K'
+        ELSE '>$10K'
+      END
+    type: string
+    description: Categorical band for transaction amount.
+
+  - name: is_large_transaction
+    sql: CASE WHEN {TABLE.amount} > 1000 THEN TRUE ELSE FALSE END
+    type: boolean
+    description: Indicates if the transaction amount exceeds a defined threshold ($1000).
+
+  - name: total_transactions
+    sql: COUNT({TABLE.transaction_id})
+    type: number
+    description: Total count of all transactions.
+
+  - name: unique_transactions
+    sql: COUNT(DISTINCT {TABLE.transaction_id})
+    type: count_distinct
+    description: Total count of distinct transaction IDs.
+
+  - name: total_transaction_amount
+    sql: SUM({TABLE.amount})
+    type: number
+    description: Sum of all transaction amounts.
+
+  - name: average_transaction_amount
+    sql: AVG({TABLE.amount})
+    type: number
+    description: Average amount of transactions.
+
+  - name: max_transaction_amount
+    sql: MAX({TABLE.amount})
+    type: number
+    description: Maximum amount of a single transaction.
+
+  - name: min_transaction_amount
+    sql: MIN({TABLE.amount})
+    type: number
+    description: Minimum amount of a single transaction.
+
+  - name: unique_customers_transacting
+    sql: COUNT(DISTINCT {TABLE.customer_id})
+    type: count_distinct
+    description: Total distinct customers involved in transactions.
+
+  - name: unique_accounts_transacting
+    sql: COUNT(DISTINCT {TABLE.account_id})
+    type: count_distinct
+    description: Total distinct accounts involved in transactions.
+
+  - name: unique_terminals_used
+    sql: COUNT(DISTINCT {TABLE.terminal_id})
+    type: count_distinct
+    description: Total distinct terminals used in transactions.
+
+  - name: unique_counterparties_involved
+    sql: COUNT(DISTINCT {TABLE.counterparty_id})
+    type: count_distinct
+    description: Total distinct counterparties involved in transactions.
+
+  - name: total_session_duration
+    sql: SUM({TABLE.session_duration})
+    type: number
+    description: Total sum of session durations.
+
+  - name: average_session_duration
+    sql: AVG({TABLE.session_duration})
+    type: number
+    description: Average session duration.
+
+  - name: completed_transactions
+    sql: COUNT(CASE WHEN {TABLE.transaction_status} = 'Completed' THEN {TABLE.transaction_id} ELSE NULL END)
+    type: number
+    description: Count of transactions with 'Completed' status.
+
+  - name: failed_transactions
+    sql: COUNT(CASE WHEN {TABLE.transaction_status} = 'Failed' THEN {TABLE.transaction_id} ELSE NULL END)
+    type: number
+    description: Count of transactions with 'Failed' status.
+
+  - name: total_mobile_transactions
+    sql: COUNT(CASE WHEN {TABLE.transaction_channel} = 'Mobile' THEN {TABLE.transaction_id} ELSE NULL END)
+    type: number
+    description: Total count of transactions initiated via the 'Mobile' channel.
+
+  - name: total_web_transactions
+    sql: COUNT(CASE WHEN {TABLE.transaction_channel} = 'Web' THEN {TABLE.transaction_id} ELSE NULL END)
+    type: number
+    description: Total count of transactions initiated via the 'Web' channel.
+
+  - name: total_atm_transactions
+    sql: COUNT(CASE WHEN {TABLE.transaction_type} = 'ATM' THEN {TABLE.transaction_id} ELSE NULL END)
+    type: number
+    description: Total count of ATM transactions.
+
+segments:
+  - name: mobile_transactions
+    sql: "{TABLE}.transaction_channel = 'Mobile'"
+    description: This segment filters transactions originating from mobile devices.
+
+  - name: web_transactions
+    sql: "{TABLE}.transaction_channel = 'Web'"
+    description: This segment filters transactions originating from web browsers, typically desktop or tablet.
+
+  - name: atm_transactions
+    sql: "{TABLE}.transaction_type = 'ATM'"
+    description: This segment filters transactions performed at ATM terminals.
+
+  - name: completed_transactions_segment
+    sql: "{TABLE}.transaction_status = 'Completed'"
+    description: This segment filters for transactions that have successfully completed.
+
+  - name: large_value_transactions
+    sql: "{TABLE}.amount > 10000" # Example threshold for large value
+    description: This segment identifies transactions exceeding a predefined high-value threshold.
+
+  - name: weekend_transactions
+    sql: "DAYOFWEEK({TABLE}.event_time) IN (1, 7)" # Assuming 1=Sunday, 7=Saturday
+    description: This segment captures transactions that occurred on weekends.

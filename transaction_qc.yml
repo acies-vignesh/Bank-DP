@@ -1,0 +1,89 @@
+checks:
+  # Schema Validation Checks
+  - schema:
+      name: Ensure essential transaction columns are present
+      warn:
+        when required column missing: [transaction_id, event_time, customer_id, amount, transaction_status]
+      attributes:
+        category: Schema
+        title: Essential columns are critical for processing and understanding every transaction.
+
+  - schema:
+      name: Validate transaction_id column type
+      warn:
+        when type changed: transaction_id
+        from: [string]
+      attributes:
+        category: Schema
+        title: Transaction IDs must remain consistent in type for reliable joins and unique identification.
+
+  - schema:
+      name: Validate amount and balance column types
+      warn:
+        when type changed: [amount, balance_before, balance_after]
+        from: [number]
+      attributes:
+        category: Schema
+        title: Monetary values and balances must be numeric for accurate financial calculations.
+
+  # Validity Checks
+  - invalid_count(amount) = 0:
+      valid min: 0.01 # Assuming transactions must have a positive amount, adjust if 0 is valid for certain types
+      name: Transaction amount should be positive
+      attributes:
+        category: Validity
+        title: Negative or zero transaction amounts (unless for specific refunds) can indicate data errors or unusual activity.
+
+  - invalid_count(transaction_status) = 0:
+      valid values: [Completed, Failed, Pending, Reversal] # Adjust based on your specific statuses
+      name: Transaction status should have valid values
+      attributes:
+        category: Validity
+        title: Transaction status must conform to defined states for accurate operational reporting and workflow management.
+
+  - invalid_count(transaction_id) = 0:
+      valid min length: 16 # Example length, adjust to your actual ID length
+      valid max length: 32 # Example length, adjust to your actual ID length
+      name: Transaction ID should have a valid length
+      attributes:
+        category: Validity
+        title: Consistent transaction ID length is crucial for data parsing, storage efficiency, and system integration.
+
+  - invalid_count(event_time) = 0:
+      valid format: 'YYYY-MM-DD HH:MI:SS' # Or your specific datetime format
+      name: Event time should have a valid format
+      attributes:
+        category: Validity
+        title: Accurate and consistently formatted timestamps are essential for time-series analysis, auditing, and freshness checks.
+
+  # Completeness Checks
+  - missing_count(transaction_id) = 0:
+      name: Transaction ID should not have any missing values
+      attributes:
+        category: Completeness
+        title: A missing transaction ID renders the record unusable for tracking and reconciliation.
+
+  - missing_count(customer_id) = 0:
+      name: Customer ID should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing customer IDs prevent linking transactions to customer profiles, hindering segmentation and behavioral analysis.
+
+  - missing_count(amount) = 0:
+      name: Transaction amount should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing transaction amounts invalidate financial reporting and prevent calculations of revenue or volume.
+
+  - missing_percent(transaction_channel) < 5: # Allowing up to 5% missing for optional fields
+      name: Transaction channel should not have missing values more than 5%
+      attributes:
+        category: Completeness
+        title: High completeness for transaction channel is important for understanding user behavior and optimizing channel strategies.
+
+  # Uniqueness Checks
+  - duplicate_count(transaction_id) = 0:
+      name: Transaction ID should be unique
+      attributes:
+        category: Uniqueness
+        title: Duplicate transaction IDs lead to inflated counts and incorrect financial reporting, compromising data integrity.

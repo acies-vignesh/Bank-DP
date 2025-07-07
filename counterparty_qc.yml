@@ -1,0 +1,52 @@
+checks:
+  # Schema Validation Checks
+  - schema:
+      name: Ensure essential counterparty columns are present
+      warn:
+        when required column missing: [counterparty_id, entity_type, country_code, name]
+      attributes:
+        category: Schema
+        title: Core counterparty details are necessary for identifying and categorizing external entities.
+
+  # Validity Checks
+  - invalid_count(entity_type) = 0:
+      valid values: [Merchant, Individual, Bank, Corporation] # Adjust based on your entity types
+      name: Entity type should have valid values
+      attributes:
+        category: Validity
+        title: Consistent entity types enable accurate classification and risk profiling of counterparties.
+
+  - invalid_count(country_code) = 0:
+      valid min length: 2 # Assuming ISO 2-letter country codes
+      valid max length: 2
+      name: Country code should be valid ISO 2-letter code
+      attributes:
+        category: Validity
+        title: Valid country codes are crucial for geographical analysis, risk assessment, and regulatory compliance.
+
+  - invalid_count(risk_category) = 0:
+      valid values: [Low, Medium, High, Sanctioned] # Adjust based on your risk categories
+      name: Risk category should have valid values
+      attributes:
+        category: Validity
+        title: Valid risk categories ensure accurate identification and management of potential financial risks.
+
+  # Completeness Checks
+  - missing_count(counterparty_id) = 0:
+      name: Counterparty ID should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing counterparty IDs prevent tracking relationships and analyzing external transaction patterns.
+
+  - missing_count(name) = 0:
+      name: Counterparty name should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing names impair the ability to identify and verify counterparties.
+
+  # Uniqueness Checks
+  - duplicate_count(counterparty_id) = 0:
+      name: Counterparty ID should be unique
+      attributes:
+        category: Uniqueness
+        title: Duplicate counterparty IDs lead to inflated counts and misrepresentation of your external network.
