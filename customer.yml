@@ -103,20 +103,30 @@ measures:
 segments:
   - name: high_risk_customers
     sql: "{TABLE}.risk_profile = 'High'"
-    description: This segment identifies customers categorized with a high risk profile.
+    description: Filters customers identified with a high-risk profile.
+    attributes:
+      business_value: Critical for focused risk assessment, enhanced due diligence, and fraud prevention efforts.
 
   - name: high_income_customers
     sql: "{TABLE}.income_bracket = '>150k'"
-    description: This segment filters for customers in the highest income bracket.
+    description: Filters customers belonging to the highest income bracket.
+    attributes:
+      business_value: Identify prime candidates for wealth management products, premium services, and targeted marketing campaigns.
 
   - name: young_adult_customers
-    sql: "{TABLE}.age BETWEEN 18 AND 34"
-    description: This segment captures customers within the young adult age range.
-
-  - name: active_customers_last_90_days
-    sql: "{TABLE}.last_interaction >= CURRENT_DATE() - INTERVAL '90' DAY" # SQL function might vary
-    description: This segment identifies customers who have interacted with the bank in the last 90 days.
+    sql: "{TABLE}.age BETWEEN 18 AND 30"
+    description: Filters customers within the young adult age demographic.
+    attributes:
+      business_value: Understand banking needs of younger generations, tailor products (e.g., student loans, first credit cards), and assess future customer growth potential.
 
   - name: new_customers_this_year
-    sql: "YEAR({TABLE}.date_joined) = YEAR(CURRENT_DATE())" # SQL function might vary
-    description: This segment identifies customers who joined the bank in the current year.
+    sql: "YEAR({TABLE}.date_joined) = YEAR(CURRENT_DATE())" # Uses current year for dynamic filtering
+    description: Filters customers who joined the bank in the current calendar year.
+    attributes:
+      business_value: Track acquisition success, monitor onboarding processes, and facilitate targeted welcome campaigns.
+
+  - name: dormant_customers
+    sql: "{TABLE}.last_activity_date < CURRENT_DATE() - INTERVAL '180' DAY" # Assumes 'last_activity_date' is a dimension or can be derived in Customer_DIM
+    description: Filters customers who have shown no activity for the past 6 months.
+    attributes:
+      business_value: Identify customers for re-engagement campaigns, potential churn prevention, or account cleanup.

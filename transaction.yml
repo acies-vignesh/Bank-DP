@@ -226,26 +226,80 @@ measures:
     description: Total count of ATM transactions.
 
 segments:
-  - name: mobile_transactions
+  - name: mobile_channel_transactions
     sql: "{TABLE}.transaction_channel = 'Mobile'"
-    description: This segment filters transactions originating from mobile devices.
+    description: Filters transactions originating exclusively from the mobile banking application.
+    attributes:
+      business_value: Analyze mobile channel adoption and performance, identify mobile-specific anomalies.
 
-  - name: web_transactions
+  - name: web_channel_transactions
     sql: "{TABLE}.transaction_channel = 'Web'"
-    description: This segment filters transactions originating from web browsers, typically desktop or tablet.
+    description: Filters transactions initiated via the bank's web portal (desktop/tablet).
+    attributes:
+      business_value: Track web channel engagement, compare performance against mobile, identify web-specific fraud patterns.
 
-  - name: atm_transactions
-    sql: "{TABLE}.transaction_type = 'ATM'"
-    description: This segment filters transactions performed at ATM terminals.
+  - name: atm_channel_transactions
+    sql: "{TABLE}.transaction_type = 'ATM'" # Using transaction_type as 'ATM' implies ATM channel
+    description: Filters transactions performed specifically at ATM terminals.
+    attributes:
+      business_value: Monitor ATM network usage, manage cash logistics, detect physical ATM fraud.
 
-  - name: completed_transactions_segment
+  - name: completed_transactions
     sql: "{TABLE}.transaction_status = 'Completed'"
-    description: This segment filters for transactions that have successfully completed.
+    description: Filters for all transactions that have successfully reached a completed state.
+    attributes:
+      business_value: Measure success rates, understand operational efficiency, and track revenue-generating activity.
+
+  - name: failed_transactions
+    sql: "{TABLE}.transaction_status = 'Failed'"
+    description: Filters for transactions that did not complete successfully.
+    attributes:
+      business_value: Critical for identifying system errors, customer friction points, potential fraud attempts, and operational bottlenecks.
 
   - name: large_value_transactions
-    sql: "{TABLE}.amount > 10000" # Example threshold for large value
-    description: This segment identifies transactions exceeding a predefined high-value threshold.
+    sql: "{TABLE}.amount > 25000" # Example threshold, adjust based on your business definition of "large"
+    description: Filters transactions with an unusually high monetary value.
+    attributes:
+      business_value: Essential for liquidity monitoring, high-value customer analytics, and immediate fraud detection.
 
   - name: weekend_transactions
     sql: "DAYOFWEEK({TABLE}.event_time) IN (1, 7)" # Assuming 1=Sunday, 7=Saturday
-    description: This segment captures transactions that occurred on weekends.
+    description: Filters transactions that occurred on Saturday or Sunday.
+    attributes:
+      business_value: Analyze weekend-specific customer behavior, identify off-hours fraud patterns, and staffing optimization.
+  
+  - name: transaction_amount_band_less_than_10
+    sql: "{TABLE}.amount < 10"
+    description: Filters transactions with an amount less than $10.
+    attributes:
+      category: Amount Banding
+      title: Smallest value transactions for micro-payment analysis.
+
+  - name: transaction_amount_band_10_to_100
+    sql: "{TABLE}.amount >= 10 AND {TABLE}.amount < 100"
+    description: Filters transactions with an amount between $10 and $100.
+    attributes:
+      category: Amount Banding
+      title: Common small-value transactions.
+
+  - name: transaction_amount_band_100_to_1k
+    sql: "{TABLE}.amount >= 100 AND {TABLE}.amount < 1000"
+    description: Filters transactions with an amount between $100 and $1,000.
+    attributes:
+      category: Amount Banding
+      title: Medium-value transactions, often daily spending.
+
+  - name: transaction_amount_band_1k_to_10k
+    sql: "{TABLE}.amount >= 1000 AND {TABLE}.amount < 10000"
+    description: Filters transactions with an amount between $1,000 and $10,000.
+    attributes:
+      category: Amount Banding
+      title: Significant transactions requiring closer monitoring.
+
+  - name: transaction_amount_band_greater_than_10k
+    sql: "{TABLE}.amount >= 10000"
+    description: Filters transactions with an amount greater than or equal to $10,000.
+    attributes:
+      category: Amount Banding
+      title: Large-value transactions, critical for fraud detection and liquidity.
+  
