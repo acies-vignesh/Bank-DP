@@ -1,0 +1,38 @@
+# product_performance_overview_view.yml
+
+views:
+  - name: product_performance_overview_view
+    description: A metric-first view summarizing key performance indicators and profitability metrics for various banking products, enabling product managers to track adoption, revenue, and usage.
+    public: true
+    meta:
+      title: Product Performance & Profitability Overview
+      tags:
+        - DPDomain.Product
+        - DPUsecase.PerformanceAnalytics
+        - DPUsecase.Profitability
+        - DPBusinessUnit.ProductManagement
+
+    # metric: # This block defines how the primary aggregates/metrics within the view are scheduled and computed.
+    #   expression: "0 0 * * *" # Example: This cron expression signifies daily calculation at midnight UTC.
+    #   timezone: "UTC"
+    #   window: "day" # The default aggregation window for time-based metrics.
+
+    tables:
+      # Start with ACCOUNT_DIM as it defines the "products" (account types)
+      - join_path: account_dim
+        prefix: false # No prefix needed for account_dim columns as it's the main dimension for products
+        includes:
+          - account_id          # Unique identifier for accounts
+          - account_type        # The primary dimension representing the "product" (e.g., 'Savings', 'Checking', 'Loan')
+          - open_date           # Useful for tracking new account openings over time
+          - current_balance     # To derive average balances and total balances for products
+          - status              # Account status (e.g., 'Active', 'Closed')
+
+      # Join with TRANSACTION_FACT to get transaction volume and revenue related to accounts/products
+      - join_path: transaction_fact
+        prefix: true # Prefix columns to avoid naming conflicts (e.g., transaction_fact_amount)
+        includes:
+          - transaction_id      # For counting transactions related to a product
+          - amount              # To sum for total revenue/volume per product
+          - event_time          # Essential timestamp for time-series analysis of product performance
+          - transaction_status  # To track success rates for product-related transactions
