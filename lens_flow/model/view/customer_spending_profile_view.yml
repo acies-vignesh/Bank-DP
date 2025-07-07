@@ -1,0 +1,54 @@
+# customer_spending_profile_view.yml
+
+views:
+  - name: customer_spending_profile_view
+    description: A holistic view providing insights into customer spending habits, demographics, and account usage. Ideal for segmentation, personalized offers, and assessing customer lifetime value.
+    public: true
+    meta:
+      title: Customer 360 Spending Profile
+      tags:
+        - DPDomain.Customer
+        - DPUsecase.Segmentation
+        - DPUsecase.Marketing
+        - DPUsecase.LTV
+
+    metric: # This block defines how the primary aggregate/metric of the view is calculated over time.
+      expression: "0 0 * * *" # Example: This cron expression signifies daily calculation at midnight.
+      timezone: "UTC"
+      window: "day" # The aggregation window for the metric.
+
+    tables:
+      # Start with CUSTOMER_DIM as the primary entity for this customer-centric view
+      - join_path: customer_dim
+        prefix: false # No prefix needed for customer_dim columns as it's the main entity
+        includes:
+          - customer_id
+          - risk_profile
+          - income_bracket
+          - occupation
+          - age
+          - date_joined
+          - location
+          - credit_score
+          - life_event # Included as a dimension if present
+
+      # Include aggregated data from TRANSACTION_FACT related to the customer
+      - join_path: transaction_fact
+        prefix: true # Prefix to differentiate from customer_dim columns (e.g., transaction_fact_amount)
+        includes:
+          - amount             # Raw amount, which can be used to derive total_transaction_amount, average_transaction_amount etc.
+          - transaction_type
+          - transaction_channel
+          - event_time         # Timestamp-mandatory for time-based analysis in the view
+          # You would also implicitly or explicitly bring in aggregated measures here,
+          # e.g., total_transaction_amount (measure from TRANSACTION_FACT)
+          # - total_transactions (measure from TRANSACTION_FACT)
+
+      # Include aggregated data from ACCOUNT_DIM related to the customer's accounts
+      - join_path: account_dim
+        prefix: true # Prefix to differentiate (e.g., account_dim_current_balance)
+        includes:
+          - account_id
+          - account_type
+          - current_balance # Raw balance, to derive average_current_balance
+          - overdraft_limit # Raw limit, to derive total_overdraft_limit_sum

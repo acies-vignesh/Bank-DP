@@ -1,0 +1,72 @@
+# transaction_anomaly_analysis_view.yml
+
+views:
+  - name: transaction_anomaly_analysis_view
+    description: Denormalized view optimized for real-time or batch anomaly detection and fraud investigation. Combines all relevant transaction context with customer, account, terminal, and counterparty attributes.
+    public: true
+    meta:
+      title: Comprehensive Transaction Anomaly Detection
+      tags:
+        - DPDomain.Risk
+        - DPUsecase.FraudDetection
+        - DPUsecase.AnomalyDetection
+
+    metric: # This block is included as per your example, for scheduling view updates/metric calculations.
+      expression: "0 0 * * *" # Example: This cron expression signifies daily calculation at midnight.
+      timezone: "UTC"
+      window: "day" # The aggregation window for any metrics derived within the view.
+
+    tables:
+      # Primary table for transaction details
+      - join_path: transaction_fact
+        prefix: false # No prefix needed for transaction_fact columns as it's the central entity
+        includes:
+          - transaction_id
+          - event_time         # Timestamp - mandatory for time-based analysis and anomaly detection
+          - amount
+          - transaction_type
+          - transaction_status
+          - balance_before
+          - balance_after
+          - session_duration
+          - device_fingerprint # Crucial for detecting new devices or unusual login patterns
+
+      # Add customer context to each transaction
+      - join_path: customer_dim
+        prefix: true # Prefix to avoid naming conflicts (e.g., customer_dim_risk_profile)
+        includes:
+          - customer_id
+          - risk_profile     # Customer's overall risk
+          - income_bracket   # For behavioral context
+          - age              # Demographic context
+          - location         # For geo-spatial anomaly detection (e.g., impossible travel)
+          - credit_score
+          # Derived metrics like customer_daily_transaction_count or distance_from_customer_home_km
+          # would leverage these included columns and be defined as measures on this view or as external features.
+
+      # Add terminal context to each transaction
+      - join_path: terminal_dim
+        prefix: true # Prefix (e.g., terminal_dim_type)
+        includes:
+          - terminal_id
+          - terminal_type    # e.g., 'ATM', 'POS', 'Online'
+          - geo_location     # Terminal's location for geo-spatial analysis
+
+      # Add account context to each transaction
+      - join_path: account_dim
+        prefix: true # Prefix (e.g., account_dim_current_balance)
+        includes:
+          - account_id
+          - account_type
+          - current_balance  # Balance at time of transaction for context
+          - overdraft_limit  # Account's overdraft limit for context on potential exposures
+
+      # Add counterparty context to each transaction
+      - join_path: counterparty_dim
+        prefix: true # Prefix (e.g., counterparty_dim_name)
+        includes:
+          - counterparty_id
+          - name             # Counterparty's name
+          - entity_type      # e.g., 'Individual', 'Merchant', 'Utility'
+          - country_code     # For international transaction analysis
+          - risk_category    # Counterparty's risk assessment
