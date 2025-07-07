@@ -67,6 +67,7 @@ dimensions:
     description: Customer's credit score.
 
   # Derived Dimensions for CUSTOMER_DIM
+measures:  
   - name: customer_tenure_months
     sql: DATEDIFF('month', {TABLE.date_joined}, CURRENT_DATE()) # SQL function might vary (e.g., MONTHS_BETWEEN)
     type: number
@@ -84,7 +85,6 @@ dimensions:
     type: string
     description: Categorical band for customer's age.
 
-measures:
   - name: total_customers
     sql: COUNT({TABLE.customer_id})
     type: number
@@ -99,3 +99,24 @@ measures:
     sql: AVG({TABLE.credit_score})
     type: number
     description: Average credit score of customers.
+
+segments:
+  - name: high_risk_customers
+    sql: "{TABLE}.risk_profile = 'High'"
+    description: This segment identifies customers categorized with a high risk profile.
+
+  - name: high_income_customers
+    sql: "{TABLE}.income_bracket = '>150k'"
+    description: This segment filters for customers in the highest income bracket.
+
+  - name: young_adult_customers
+    sql: "{TABLE}.age BETWEEN 18 AND 34"
+    description: This segment captures customers within the young adult age range.
+
+  - name: active_customers_last_90_days
+    sql: "{TABLE}.last_interaction >= CURRENT_DATE() - INTERVAL '90' DAY" # SQL function might vary
+    description: This segment identifies customers who have interacted with the bank in the last 90 days.
+
+  - name: new_customers_this_year
+    sql: "YEAR({TABLE}.date_joined) = YEAR(CURRENT_DATE())" # SQL function might vary
+    description: This segment identifies customers who joined the bank in the current year.

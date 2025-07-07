@@ -37,12 +37,12 @@ dimensions:
     description: Country where the terminal is located.
 
   # Derived Dimensions for TERMINAL_DIM
+measures:  
   - name: terminal_geo_region
     sql: CASE WHEN {TABLE.country} = 'USA' THEN 'North America' ELSE 'International' END # Example; refine with more countries/regions
     type: string
     description: Broader geographical region of the terminal.
 
-measures:
   - name: total_terminals
     sql: COUNT({TABLE.terminal_id})
     type: number

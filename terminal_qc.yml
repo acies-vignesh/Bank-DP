@@ -1,0 +1,45 @@
+checks:
+  # Schema Validation Checks
+  - schema:
+      name: Ensure essential terminal columns are present
+      warn:
+        when required column missing: [terminal_id, terminal_type, country]
+      attributes:
+        category: Schema
+        title: Core terminal details are crucial for operational management and geographical analysis.
+
+  # Validity Checks
+  - invalid_count(terminal_type) = 0:
+      valid values: [ATM, POS, Online, Kiosk] # Adjust based on your terminal types
+      name: Terminal type should have valid values
+      attributes:
+        category: Validity
+        title: Consistent terminal types are essential for accurate channel analysis and network management.
+
+  - invalid_count(country) = 0:
+      valid min length: 2 # Assuming ISO 2-letter country codes
+      valid max length: 2
+      name: Terminal country code should be valid
+      attributes:
+        category: Validity
+        title: Valid country codes are vital for geographical analysis and regulatory reporting.
+
+  # Completeness Checks
+  - missing_count(terminal_id) = 0:
+      name: Terminal ID should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing terminal IDs prevent tracking asset usage and linking transactions to their origin.
+
+  - missing_count(terminal_type) = 0:
+      name: Terminal type should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing terminal types impair channel performance analysis and operational insights.
+
+  # Uniqueness Checks
+  - duplicate_count(terminal_id) = 0:
+      name: Terminal ID should be unique
+      attributes:
+        category: Uniqueness
+        title: Duplicate terminal IDs lead to inaccurate counts of operational assets and misrepresent network capacity.

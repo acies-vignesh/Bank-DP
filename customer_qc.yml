@@ -1,0 +1,61 @@
+checks:
+  # Schema Validation Checks
+  - schema:
+      name: Ensure essential customer columns are present
+      warn:
+        when required column missing: [customer_id, age, date_joined, risk_profile]
+      attributes:
+        category: Schema
+        title: Core customer attributes are foundational for segmentation, risk assessment, and personalized services.
+
+  - schema:
+      name: Validate age and credit_score column types
+      warn:
+        when type changed: [age, credit_score]
+        from: [number]
+      attributes:
+        category: Schema
+        title: Numeric fields like age and credit score must retain their type for accurate demographic and risk analysis.
+
+  # Validity Checks
+  - invalid_count(age) = 0:
+      valid min: 18 # Assuming minimum legal age for banking
+      valid max: 120 # Realistic maximum age
+      name: Customer age should be within a valid range
+      attributes:
+        category: Validity
+        title: Age outside expected human lifespan indicates data entry errors or anomalous records.
+
+  - invalid_count(risk_profile) = 0:
+      valid values: [High, Medium, Low, Unknown] # Add 'Unknown' if applicable
+      name: Risk profile should have valid values
+      attributes:
+        category: Validity
+        title: Consistent risk profiles ensure reliable risk management and regulatory compliance.
+
+  - invalid_count(date_joined) = 0:
+      valid max: TODAY() # Or a specific cutoff date
+      name: Date joined should not be in the future
+      attributes:
+        category: Validity
+        title: A future 'date_joined' is illogical and indicates a data entry error.
+
+  # Completeness Checks
+  - missing_count(customer_id) = 0:
+      name: Customer ID should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing customer IDs render records orphaned and prevent linkage to accounts and transactions.
+
+  - missing_percent(income_bracket) < 10: # Allowing some missingness for optional demographic data
+      name: Income bracket should not have missing values more than 10%
+      attributes:
+        category: Completeness
+        title: High completeness for income bracket supports robust customer segmentation and targeted marketing.
+
+  # Uniqueness Checks
+  - duplicate_count(customer_id) = 0:
+      name: Customer ID should be unique
+      attributes:
+        category: Uniqueness
+        title: Duplicate customer IDs lead to inaccurate customer counts and skewed analysis of customer behavior and value.

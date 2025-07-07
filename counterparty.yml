@@ -32,12 +32,12 @@ dimensions:
     description: Industry of the counterparty.
 
   # Derived Dimensions for COUNTERPARTY_DIM
+measures:  
   - name: counterparty_geo_region
     sql: CASE WHEN {TABLE.country_code} IN ('US', 'CA', 'MX') THEN 'North America' ELSE 'Rest of World' END # Example, refine as needed
     type: string
     description: Broader geographical region of the counterparty.
 
-measures:
   - name: total_counterparties
     sql: COUNT({TABLE.counterparty_id})
     type: number

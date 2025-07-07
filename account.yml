@@ -37,6 +37,7 @@ dimensions:
     description: Current status of the account (e.g., Active, Dormant).
 
   # Derived Dimensions for ACCOUNT_DIM
+measures:  
   - name: account_tenure_months
     sql: DATEDIFF('month', {TABLE.open_date}, CURRENT_DATE()) # SQL function might vary
     type: number
@@ -58,7 +59,6 @@ dimensions:
     type: boolean
     description: Indicates if the account has an overdraft limit enabled.
 
-measures:
   - name: total_accounts
     sql: COUNT({TABLE.account_id})
     type: number

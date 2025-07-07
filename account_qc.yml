@@ -1,0 +1,67 @@
+checks:
+  # Schema Validation Checks
+  - schema:
+      name: Ensure essential account columns are present
+      warn:
+        when required column missing: [account_id, customer_id, account_type, open_date, current_balance, status]
+      attributes:
+        category: Schema
+        title: Critical account information is fundamental for financial reporting and customer service.
+
+  - schema:
+      name: Validate balance and limit column types
+      warn:
+        when type changed: [current_balance, overdraft_limit]
+        from: [number]
+      attributes:
+        category: Schema
+        title: Financial figures like balances and limits must be numeric for correct accounting and risk calculations.
+
+  # Validity Checks
+  - invalid_count(account_type) = 0:
+      valid values: [Savings, Checking, Credit, Loan] # Adjust based on your account types
+      name: Account type should have valid values
+      attributes:
+        category: Validity
+        title: Consistent account types are crucial for product analysis and regulatory classification.
+
+  - invalid_count(status) = 0:
+      valid values: [Active, Closed, Dormant, Suspended] # Adjust based on your account statuses
+      name: Account status should have valid values
+      attributes:
+        category: Validity
+        title: Valid account statuses ensure accurate operational workflows and customer service responses.
+
+  - invalid_count(current_balance) = 0:
+      valid min: -100000 # Example: Allowing negative balances up to a certain overdraft limit
+      # valid max: No strict max, but can add if there are large balance outliers
+      name: Current balance should be within a reasonable range
+      attributes:
+        category: Validity
+        title: Extreme or erroneous balance values can distort financial reports and risk assessments.
+
+  # Completeness Checks
+  - missing_count(account_id) = 0:
+      name: Account ID should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing account IDs prevent account reconciliation and linking to customer data.
+
+  - missing_count(customer_id) = 0:
+      name: Customer ID in account should not have any missing values
+      attributes:
+        category: Completeness
+        title: Missing customer IDs in account records break the relationship to the customer, impairing holistic views.
+
+  - missing_count(open_date) = 0:
+      name: Account open date should not have any missing values
+      attributes:
+        category: Completeness
+        title: The open date is critical for calculating account tenure and lifecycle analysis.
+
+  # Uniqueness Checks
+  - duplicate_count(account_id) = 0:
+      name: Account ID should be unique
+      attributes:
+        category: Uniqueness
+        title: Duplicate account IDs lead to incorrect account counts and misrepresentation of customer holdings.
